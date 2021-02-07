@@ -48,7 +48,7 @@ int main() {
 				cout << "nfds:" << events[i].events << endl;
 				if (events[i].events & EPOLLOUT) {
 					bzero(input_msg, BUFF_SIZE);
-					fgets(input_msg, BUFF_SIZE, stdin);
+					cin >> input_msg;
 
 					cout << input_msg << endl;
 
