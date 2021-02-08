@@ -1,4 +1,4 @@
-import select
+import select, sys
 import socket
 import Queue
 
@@ -13,11 +13,11 @@ timeout = 5
 
 epoll = select.epoll()
 epoll.register(server_sock.fileno(), select.EPOLLIN)
+epoll.register(0, select.EPOLLIN)
 
 mq = {}
 fd_to_socket = {server_sock.fileno(): server_sock}
-
-a = 0
+fd_to_socket[0] = 0
 
 while True:
     print ('wait for client...')
@@ -29,12 +29,14 @@ while True:
     for fd,event in events:
         print ('event', bin(event))
 
-        a += 1
-        if a > 10:
-            exit(0)
-
         socket = fd_to_socket[fd]
-        if socket == server_sock:
+	if fd == 0:
+		word = sys.stdin.readline()
+        	for k in fd_to_socket.keys():
+			if k == 0 or fd_to_socket[k] == server_sock:
+				continue
+			fd_to_socket[k].send(word)
+	elif socket == server_sock:
             connection, address = server_sock.accept()
             print ('start new connection:', address)
             connection.setblocking(False)

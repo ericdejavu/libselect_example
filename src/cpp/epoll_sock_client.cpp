@@ -56,7 +56,7 @@ int main() {
 					char *input_message = new char[1024];
 					bzero(input_message, 1024);
 					fgets(input_message, 1024, stdin);
-					send(server_sock_fd, input_message, 1024, 0);
+					send(server_sock_fd, input_message, strlen(input_message), 0);
 					delete [] input_message;
 
 				} else if (events[i].events & EPOLLOUT) {
