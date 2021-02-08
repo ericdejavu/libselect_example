@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -16,7 +17,7 @@ using namespace std;
 
 int main() {
 	int connfd, sockfd, n;
-	struct epoll_event ev, events[20];
+	struct epoll_event ev, ev1, events[20];
 	int epfd = epoll_create(256);
 
 	struct sockaddr_in client_addr;
@@ -33,6 +34,10 @@ int main() {
 	ev.events = EPOLLIN|EPOLLET;
 	epoll_ctl(epfd, EPOLL_CTL_ADD, server_sock_fd, &ev);
 
+	ev1.data.fd = 0;
+	ev1.events = EPOLLIN;
+	epoll_ctl(epfd, EPOLL_CTL_ADD, 0, &ev1);
+
 	if (server_sock_fd == -1) {
 		cout << "socket error" << endl;
 		return -1;
@@ -46,7 +51,15 @@ int main() {
 			int nfds = epoll_wait(epfd, events, 20, 500);
 			for (int i=0;i<nfds;++i) {
 				cout << "nfds:" << events[i].events << endl;
-				if (events[i].events & EPOLLOUT) {
+				if (events[i].data.fd == 0) {
+
+					char *input_message = new char[1024];
+					bzero(input_message, 1024);
+					fgets(input_message, 1024, stdin);
+					send(server_sock_fd, input_message, 1024, 0);
+					delete [] input_message;
+
+				} else if (events[i].events & EPOLLOUT) {
 					bzero(input_msg, BUFF_SIZE);
 					cin >> input_msg;
 
